@@ -1,18 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "funcoes.c"
+#include <unistd.h>
+#include "funcoes.h"
 
 int main(){
-    FILE *boletim1Turno = fopen("Boletim1ºTurno.txt", "w");
+    limparTerminal();
 
+    FILE *boletim1Turno = fopen("Boletim1ºTurno.txt", "w");
     int votosBrancos = 0, votosNulos = 0, votosValidos = 0, votosTotais = 0;
     int quantChapas = quantidadeChapas();
-
-    Chapa *chapas = (Chapa *) malloc(quantChapas * sizeof(Chapa));
-    if(chapas == NULL){
-        perror("Erro alocacao de memoria");
-        exit(1);
-    }
+    Chapa *chapas = NULL;
 
     chapas = registrarChapas(chapas); 
 
@@ -25,24 +22,28 @@ int main(){
     quickSort(chapas, 0, quantChapas-1, criterioQuantidadeVotos);
 
     if(verificaSegundoTurno(boletim1Turno, chapas, &votosValidos)){
+        limparTerminal();
         printf("Havera Segundo Turno");
 
         votosBrancos = votosNulos = votosValidos = votosTotais = 0;
 
         FILE *boletim2Turno = fopen("Boletim2ºTurno.txt", "w");
 
-        Chapa *chapas2Turno = (Chapa *) malloc(2 * sizeof(Chapa));
+        Chapa *chapas2Turno = NULL;
         chapas2Turno = candidatosSegundoTurno(boletim1Turno, chapas, chapas2Turno);
+        fflush(stdout);
+        sleep(4);
 
-        quickSort(chapas, 0, 1, criterioNumero);
+        quickSort(chapas2Turno, 0, 1, criterioNumero);
         
-        votacao(chapas, &votosBrancos, &votosNulos, 2);
+        votacao(chapas2Turno, &votosBrancos, &votosNulos, 2); 
 
-        boletimDeUrna(boletim1Turno, chapas, &votosBrancos, &votosNulos, &votosValidos, &votosTotais, 2);
+        boletimDeUrna(boletim2Turno, chapas2Turno, &votosBrancos, &votosNulos, &votosValidos, &votosTotais, 2);
 
-        quickSort(chapas, 0, 1, criterioQuantidadeVotos);
+        quickSort(chapas2Turno, 0, 1, criterioQuantidadeVotos);
 
-        defineCandidatoEleito(boletim2Turno, chapas2Turno);
+        limparTerminal();
+        defineCandidatoEleito(boletim2Turno, chapas2Turno, &votosValidos);
 
         free(chapas2Turno);
         fclose(boletim2Turno);

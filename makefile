@@ -1,9 +1,15 @@
 all: main
 
-trabalho: main.o funcoes.o
-	gcc -o main main.o funcoes.o
+main: main.o funcoes.o
+	gcc -Wall -o main main.o funcoes.o
+
+main.o: main.c
+	gcc -c -Wall main.c
+
+funcoes.o: funcoes.c
+	gcc -c -Wall funcoes.c
 
 clean: 
-	rm trabalho2.o
-	rm estoque.o
-	rm trabalho
+	rm main.o
+	rm funcoes.o
+	rm main

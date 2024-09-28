@@ -1,0 +1,31 @@
+Numero de votos no candidato Ana: 4
+Numero de votos no candidato Rafael: 4
+Numero de votos no candidato Gabriel: 2
+Numero de votos no candidato Lucas: 1
+Numero de votos no candidato Carlos: 1
+
+Numero de votos validos: 12
+Numero de votos brancos: 4
+Numero de votos nulos: 4
+Numero de votos Totais: 20
+
+Porcentagem de votos dos VOTOS TOTAIS
+Porcentagem para o candidato Ana: 20.00%
+Porcentagem para o candidato Rafael: 20.00%
+Porcentagem para o candidato Gabriel: 10.00%
+Porcentagem para o candidato Lucas: 5.00%
+Porcentagem para o candidato Carlos: 5.00%
+
+Porcentagem votos validos: 60.00%
+Porcentagem votos brancos: 20.00%
+Porcentagem votos nulos: 20.00%
+Porcentagem votos Totais: 100%
+
+Porcentagem de votos dos VOTOS VALIDOS
+Porcentagem para o candidato Ana: 33.33%
+Porcentagem para o candidato Rafael: 33.33%
+Porcentagem para o candidato Gabriel: 16.67%
+Porcentagem para o candidato Lucas: 8.33%
+Porcentagem para o candidato Carlos: 8.33%
+
+Segundo turno com os candidatos Ana e Rafael

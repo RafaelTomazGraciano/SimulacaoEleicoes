@@ -1,0 +1,23 @@
+Numero de votos no candidato Ana: 5
+Numero de votos no candidato Rafael: 7
+
+Numero de votos validos: 12
+Numero de votos brancos: 3
+Numero de votos nulos: 5
+Numero de votos Totais: 20
+
+Porcentagem de votos dos VOTOS TOTAIS
+Porcentagem para o candidato Ana: 25.00%
+Porcentagem para o candidato Rafael: 35.00%
+
+Porcentagem votos validos: 60.00%
+Porcentagem votos brancos: 15.00%
+Porcentagem votos nulos: 25.00%
+Porcentagem votos Totais: 100%
+
+Porcentagem de votos dos VOTOS VALIDOS
+Porcentagem para o candidato Ana: 41.67%
+Porcentagem para o candidato Rafael: 58.33%
+
+
+O prefeito eleito e Rafael com o vice Daniel

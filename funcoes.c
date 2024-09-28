@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include "funcoes.h"
 
 int quantChapas;
@@ -32,7 +33,7 @@ int quantidadeChapas(){
         scanf("%d", &quantChapas);
         setbuf(stdin, NULL);
         if(quantChapas < 1 || quantChapas > 99){
-            printf("\nDigite um valor entre 1 e 99\n");
+            printf("\nDigite um valor entre 1 e 99\n\n");
         }
     }while(quantChapas < 1 || quantChapas > 99);
 
@@ -40,6 +41,12 @@ int quantidadeChapas(){
 }
 
 Chapa *registrarChapas(Chapa *chapas){
+
+    chapas = (Chapa *) malloc(quantChapas * sizeof(Chapa));
+    if(chapas == NULL){
+        perror("Erro alocacao de memoria");
+        exit(1);
+    }
 
     for(int i = 0; i < quantChapas; i++){
         limparTerminal();
@@ -49,15 +56,17 @@ Chapa *registrarChapas(Chapa *chapas){
         setbuf(stdin, NULL);
         corrigeFormatacao(chapas[i].nome);
 
-        printf("Digite o numero do candidato: ");
-        scanf("%d", &chapas[i].numero);
-        setbuf(stdin, NULL); 
+        do{
+            printf("Digite o numero do candidato: ");
+            scanf("%d", &chapas[i].numero);
+            setbuf(stdin, NULL); 
+        }while(verificaNumero(chapas, i, quantChapas));
 
-        //TODO verificar se o numero ja nao esta cadastrado
-
-        printf("Digite o dia de nascimento do candidato no formato DD MM AAAA: ");
-        scanf("%d %d %d", &chapas[i].dataNascimento[0], &chapas[i].dataNascimento[1], &chapas[i].dataNascimento[2]);
-        setbuf(stdin, NULL);
+        do{
+            printf("Digite o dia de nascimento do candidato no formato DD MM AAAA: ");
+            scanf("%d %d %d", &chapas[i].dataNascimento[0], &chapas[i].dataNascimento[1], &chapas[i].dataNascimento[2]);
+            setbuf(stdin, NULL);
+        }while(verificaData(chapas[i].dataNascimento));
 
         printf("Digite o nome do vice: ");
         fgets(chapas[i].nomeVice, 50, stdin);
@@ -70,14 +79,59 @@ Chapa *registrarChapas(Chapa *chapas){
     return chapas;
 }
 
-void corrigeFormatacao(char *str){
-    str[strcspn(str, "\n")] = 0;
+int verificaNumero(Chapa *chapas, int pos, int quant){
+    if(chapas[pos].numero <= 0 || chapas[pos].numero > 99){
+        printf("\nO numero deve estar entre 1 e 99!\n\n");
+        return 1;
+    }
+
+    for(int i = 0; i < quant; i++){
+        if(i != pos && chapas[i].numero == chapas[pos].numero){
+            printf("\nEste numero ja esta sendo usado!\n\n");
+            return 1;
+        }
+    }
+    return 0; 
 }
 
-void ImprimeCandidatos(Chapa *chapas){
-    for(int i = 0; i < quantChapas; i++){
-        printf("%s | %d | %s\n", chapas[i].nome, chapas[i].numero, chapas[i].nomeVice);
+int verificaData(int dataNasc[3]){
+    struct tm data = {0};
+    time_t agora = time(NULL);
+    struct tm *tm_atual = localtime(&agora);
+
+    int data_atual[] = {tm_atual->tm_mday, tm_atual->tm_mon + 1, tm_atual->tm_year + 1900};
+      
+
+    if (comparaIdade(data_atual, dataNasc)) {
+        printf("\nData invalida! A pessoa ainda nao nasceu.\n\n");
+        return 1; 
     }
+
+
+    data.tm_mday = dataNasc[0];
+    data.tm_mon = dataNasc[1] - 1;
+    data.tm_year = dataNasc[2] - 1900;
+
+    mktime(&data);
+
+    if(data.tm_mday != dataNasc[0] || data.tm_mon != dataNasc[1] - 1 || data.tm_year != dataNasc[2] - 1900){
+        printf("\nData invalida!\n\n");
+        return 1;
+    }
+    return 0;
+}
+
+int comparaIdade(int data1[3], int data2[3]) {
+    if (data1[2] < data2[2]) return 1; 
+    if (data1[2] > data2[2]) return 0;
+    if (data1[1] < data2[1]) return 1; 
+    if (data1[1] > data2[1]) return 0;
+    if (data1[0] < data2[0]) return 1; 
+    return 0;
+}
+
+void corrigeFormatacao(char *str){
+    str[strcspn(str, "\n")] = 0;
 }
 
 void votacao(Chapa *chapas, int *votosBrancos, int *votosNulos, int quant){
@@ -88,8 +142,8 @@ void votacao(Chapa *chapas, int *votosBrancos, int *votosNulos, int quant){
 
         limparTerminal();
         printf(" CANDIDATOS\n\n");
-        printf("NOME  |  NUMERO  | VICE\n");
-        ImprimeCandidatos(chapas); 
+        printf(" NOME   |   NUMERO   |  VICE\n\n");
+        ImprimeCandidatos(chapas, quant); 
         printf("\n");
         printf("Seu voto para prefeito: ");
         scanf("%d", &numeroVotado);
@@ -112,12 +166,18 @@ int quantidadeEleitores(){
             printf("Digite a quantidade de eleitores: ");
             scanf("%d", &quantEleitores);   
             if(quantEleitores < 10){
-                printf("\nDigite um valor igual ou maior que 10\n");
+                printf("\nDigite um valor igual ou maior que 10\n\n");
             }
         }while(quantEleitores < 10);
     }
 
     return quantEleitores;
+}
+
+void ImprimeCandidatos(Chapa *chapas, int quant){
+    for(int i = 0; i < quant; i++){
+        printf("%s | %d | %s\n", chapas[i].nome, chapas[i].numero, chapas[i].nomeVice);
+    }
 }
 
 void atribuirVoto(Chapa *chapas, int voto, int *votosBrancos, int *votosNulos, int quant){
@@ -173,27 +233,26 @@ void porcentagemVotos(FILE *boletim, Chapa *chapas, int *votosBrancos, int *voto
         fprintf(boletim, "Porcentagem para o candidato %s: %.2f%%\n", chapas[i].nome, chapas[i].quantidadeVotos*100.0/(*votosTotais));
     }
 
+    fprintf(boletim,"\nPorcentagem votos validos: %.2f%%\n", (*votosValidos)*100.0/(*votosTotais));
+    fprintf(boletim,"Porcentagem votos brancos: %.2f%%\n", (*votosBrancos)*100.0/(*votosTotais));
+    fprintf(boletim,"Porcentagem votos nulos: %.2f%%\n", (*votosNulos)*100.0/(*votosTotais));
+    fprintf(boletim, "Porcentagem votos Totais: 100%%\n");
+
     fprintf(boletim,"\nPorcentagem de votos dos VOTOS VALIDOS\n");
     for(int i = 0; i < quant; i++){
         fprintf(boletim, "Porcentagem para o candidato %s: %.2f%%\n", chapas[i].nome, chapas[i].quantidadeVotos*100.0/(*votosValidos));
     }
-
-        fprintf(boletim,"\nPorcentagem votos validos: %.2f%%\n", (*votosValidos)*100.0/(*votosTotais));
-        fprintf(boletim,"Porcentagem votos brancos: %.2f%%\n", (*votosBrancos)*100.0/(*votosTotais));
-        fprintf(boletim,"Porcentagem votos nulos: %.2f%%\n", (*votosNulos)*100.0/(*votosTotais));
-        fprintf(boletim, "Porcentagem votos Totais: 100%%\n");
-    
 }
 
 int verificaSegundoTurno(FILE *boletim, Chapa *chapas, int *votosValidos){
-    if(chapas[quantChapas-1].quantidadeVotos*100/(*votosValidos) > 50.0){
-        fprintf(boletim, "\n\nO prefeito eleito e %s com o vice %s", chapas[quantChapas-1].nome, chapas[quantChapas-2].nomeVice);
-        printf("\n\nO prefeito eleito e %s com o vice %s", chapas[quantChapas-1].nome, chapas[quantChapas-2].nomeVice);
-        return 0;
-    }
-    else{
+    if(chapas[quantChapas-1].quantidadeVotos*100/(*votosValidos) < 50.0){
+        segundoTurno = 1;
         return 1;
     }
+    limparTerminal();
+    fprintf(boletim, "\n\nO prefeito eleito e %s com o vice %s", chapas[quantChapas-1].nome, chapas[quantChapas-1].nomeVice);
+    printf("\n\nO prefeito eleito e %s com o vice %s\n", chapas[quantChapas-1].nome, chapas[quantChapas-1].nomeVice);
+    return 0;
 }
 
 Chapa *candidatosSegundoTurno(FILE *boletim, Chapa *chapas, Chapa *chapas2Turno){
@@ -201,45 +260,58 @@ Chapa *candidatosSegundoTurno(FILE *boletim, Chapa *chapas, Chapa *chapas2Turno)
     int contagemEmpate = 0;
     Chapa candidatosEmpatados[quantChapas];
 
-    for (int i = quantChapas - 1; chapas[i].quantidadeVotos == maiorVoto; i--) {
+    chapas2Turno = (Chapa *) malloc(2 * sizeof(Chapa));
+
+    for (int i = quantChapas-2; chapas[i].quantidadeVotos == maiorVoto; i--) {
         candidatosEmpatados[contagemEmpate++] = chapas[i];
     }
-    printf("\ncontagemEmpate: %d\n", contagemEmpate);
 
     if(contagemEmpate <= 1){
-        printf("Segundo turno com os candidatos %s e %s\n", chapas[quantChapas-1].nome, chapas[quantChapas-2].nome);
-        fprintf(boletim, "Segundo turno com os candidatos %s e %s\n", chapas[quantChapas-1].nome, chapas[quantChapas-2].nome);
+        printf("\nSegundo turno com os candidatos %s e %s\n", chapas[quantChapas-1].nome, chapas[quantChapas-2].nome);
+        fprintf(boletim, "\nSegundo turno com os candidatos %s e %s\n", chapas[quantChapas-1].nome, chapas[quantChapas-2].nome);
+        chapas2Turno[0] = chapas[quantChapas-1];
+        chapas2Turno[1] = chapas[quantChapas-2];
     }
-        else{
-            Chapa maisVelho = candidatosEmpatados[0];
-            Chapa segundoMaisVelho = candidatosEmpatados[1];
+    else{
+        Chapa maisVelho = candidatosEmpatados[0];
+        Chapa segundoMaisVelho = candidatosEmpatados[1];
 
-            for (int i = 1; i < contagemEmpate; i++) {
-                if (comparaIdade(candidatosEmpatados[i].dataNascimento, maisVelho.dataNascimento)) {
-                    segundoMaisVelho = maisVelho;
-                    maisVelho = candidatosEmpatados[i];
-                } else if (comparaIdade(candidatosEmpatados[i].dataNascimento, segundoMaisVelho.dataNascimento)) {
-                    segundoMaisVelho = candidatosEmpatados[i];
-                }
+        for (int i = 1; i < contagemEmpate; i++) {
+            if (comparaIdade(candidatosEmpatados[i].dataNascimento, maisVelho.dataNascimento)) {
+                segundoMaisVelho = maisVelho;
+                maisVelho = candidatosEmpatados[i];
+            } 
+            else if (comparaIdade(candidatosEmpatados[i].dataNascimento, segundoMaisVelho.dataNascimento)) {
+                segundoMaisVelho = candidatosEmpatados[i];
             }
-
-            printf("Segundo turno com os candidatos %s e %s\n", maisVelho.nome, segundoMaisVelho.nome);
-            fprintf(boletim, "Segundo turno com os candidatos %s e %s\n", maisVelho.nome, segundoMaisVelho.nome);
         }
+
+        printf("\nSegundo turno com os candidatos %s e %s\n", maisVelho.nome, segundoMaisVelho.nome);
+        fprintf(boletim, "\nSegundo turno com os candidatos %s e %s\n", maisVelho.nome, segundoMaisVelho.nome);
+        chapas2Turno[0] = maisVelho;
+        chapas2Turno[1] = segundoMaisVelho;
+    }
+
+    chapas2Turno[0].quantidadeVotos = 0;
+    chapas2Turno[1].quantidadeVotos = 0;
     return chapas2Turno;
 }
 
-int comparaIdade(int data1[3], int data2[3]) {
-    if (data1[2] < data2[2]) return 1; 
-    if (data1[2] > data2[2]) return 0;
-    if (data1[1] < data2[1]) return 1; 
-    if (data1[1] > data2[1]) return 0;
-    if (data1[0] < data2[0]) return 1; 
-    if (data1[0] > data2[0]) return 0;
-}
-
-void defineCandidatoEleito(FILE *boletim2Turno, Chapa *chapas2Turno){
-    //TODO
+void defineCandidatoEleito(FILE *boletim2Turno, Chapa *chapas2Turno, int *votosValidos){
+    if(chapas2Turno[1].quantidadeVotos*100/(*votosValidos) > 50.0){
+        fprintf(boletim2Turno, "\n\nO prefeito eleito e %s com o vice %s", chapas2Turno[1].nome, chapas2Turno[1].nomeVice);
+        printf("O prefeito eleito e %s com o vice %s\n", chapas2Turno[1].nome, chapas2Turno[1].nomeVice);
+    }
+    else{
+        if(comparaIdade(chapas2Turno[0].dataNascimento, chapas2Turno[1].dataNascimento)){
+            fprintf(boletim2Turno, "\n\nO prefeito eleito e %s com o vice %s", chapas2Turno[0].nome, chapas2Turno[0].nomeVice);
+            printf("O prefeito eleito e %s com o vice %s\n", chapas2Turno[0].nome, chapas2Turno[0].nomeVice);
+        }
+        else{
+            fprintf(boletim2Turno, "\n\nO prefeito eleito e %s com o vice %s", chapas2Turno[1].nome, chapas2Turno[1].nomeVice);
+            printf("O prefeito eleito e %s com o vice %s\n", chapas2Turno[1].nome, chapas2Turno[1].nomeVice);
+        }
+    }
 }
 
 void quickSort(Chapa *chapas, int inicio, int fim, int (*criterio)(struct chapa, struct chapa)){
@@ -282,4 +354,3 @@ int criterioNumero(Chapa a, Chapa b){
 int criterioQuantidadeVotos(Chapa a, Chapa b){
     return a.quantidadeVotos - b.quantidadeVotos;
 }
-
